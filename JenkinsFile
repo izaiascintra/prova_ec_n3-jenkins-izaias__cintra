@@ -1,0 +1,49 @@
+pipeline {
+  agent any
+
+  environment {
+    PROJECTIZ = "$WORKSPACE/prova_ec_n3-jenkins-izaias__cintra"
+  }
+   stages {
+        stage ('prepar_Gradle') {
+            steps {
+                echo 'Preparando gradle '
+                dir ("&PROJECTIZ") {
+                  sh 'gradle wrapper'
+                }
+            }
+        }
+        stage ('Test_Unitario') {
+            steps {
+                echo 'Preparando teste unitario '
+                dir ("&PROJECTIZ") {
+                  sh './gradlew test'
+                }
+            }
+        }
+        stage ('preparando build') {
+            steps {
+                echo 'Preparando build do apk '
+                dir ("&PROJECTIZ") {
+                  sh './gradlew lintDebug'
+                }
+            }
+        }
+        stage ('preparando figerprint') {
+            steps {
+                echo 'Preparando figerprint '
+                dir ("&PROJECTIZ") {
+                  sh './gradlew assembleRelease'
+                }
+            }
+        }
+        stage ('arquivar_apk') {
+            steps {
+                echo 'arquivar o apk'
+                archiveArtifacts artifacts: '**/app-Release-unsigned.apk',
+                fingerprint: true, allowEmptyArchive: false
+            }
+        }
+
+   }
+}
